@@ -236,7 +236,7 @@ VALUES (
 (
 	(SELECT id FROM "COACH" WHERE user_id = (SELECT id FROM "USER" WHERE email = 'muscle@hexschooltest.io' )),
 	(SELECT id FROM "SKILL" WHERE name = '瑜伽')
-  ),
+),
 -- 教練`Q太郎` 需要有 `有氧運動` 與 `復健訓練` 專長
 (
 	(SELECT id FROM "COACH" WHERE user_id = (SELECT id FROM "USER" WHERE email = 'starplatinum@hexschooltest.io' )),
@@ -395,13 +395,12 @@ GROUP BY "COURSE_BOOKING".user_id;
     -- from ( 用戶王小明的購買堂數 ) as "CREDIT_PURCHASE"
     -- inner join ( 用戶王小明的已使用堂數) as "COURSE_BOOKING"
     -- on "COURSE_BOOKING".user_id = "CREDIT_PURCHASE".user_id;
-SELECT 
-		"CREDIT_PURCHASE".user_id,
-		("CREDIT_PURCHASE".total - "COURSE_BOOKING".total) AS remaining_credit
-FROM (SELECT user_id, SUM(purchased_credits) AS total FROM "CREDIT_PURCHASE" GROUP BY user_id) AS "CREDIT_PURCHASE"
-INNER JOIN (SELECT user_id, COUNT(*) AS total FROM "COURSE_BOOKING" GROUP BY user_id) AS "COURSE_BOOKING"
-ON "CREDIT_PURCHASE".user_id = "COURSE_BOOKING".user_id
-WHERE "CREDIT_PURCHASE".user_id = (SELECT id FROM "USER" WHERE email = 'wXlTq@hexschooltest.io');
+SELECT
+    "CREDIT_PURCHASE".user_id,
+    SUM("CREDIT_PURCHASE".purchased_credits)-(SELECT COUNT(*) FROM "COURSE_BOOKING" WHERE "COURSE_BOOKING".user_id=(SELECT id FROM "USER" WHERE email='wXlTq@hexschooltest.io') AND status!='課程已取消') AS remaining_credit
+FROM "CREDIT_PURCHASE"
+WHERE user_id=(SELECT id FROM "USER" WHERE email='wXlTq@hexschooltest.io')
+group BY "CREDIT_PURCHASE".user_id;
 
 
 -- ████████  █████   █     ███  
@@ -442,19 +441,19 @@ SELECT
     COUNT(*) AS "銷售數量"
 FROM "CREDIT_PURCHASE"
 INNER JOIN "CREDIT_PACKAGE" ON "CREDIT_PURCHASE".credit_package_id = "CREDIT_PACKAGE".id
-WHERE "CREDIT_PURCHASE".created_at BETWEEN '2024-12-01 00:00:00' AND '2024-12-30 23:59:59'
+WHERE "CREDIT_PURCHASE".created_at BETWEEN '2024-11-01 00:00:00' AND '2024-11-30 23:59:59'
 GROUP BY "CREDIT_PACKAGE".name;
 
 -- 6-4. 查詢：計算 11 月份總營收（使用 purchase_at 欄位統計）
 -- 顯示須包含以下欄位： 總營收
 SELECT SUM("CREDIT_PURCHASE".price_paid) AS "總營收"
 FROM "CREDIT_PURCHASE"
-WHERE "CREDIT_PURCHASE".created_at BETWEEN '2024-12-01 00:00:00' AND '2024-12-30 23:59:59';
+WHERE "CREDIT_PURCHASE".created_at BETWEEN '2024-11-01 00:00:00' AND '2024-11-30 23:59:59';
 
 -- 6-5. 查詢：計算 11 月份有預約課程的會員人數（需使用 Distinct，並用 created_at 和 status 欄位統計）
 -- 顯示須包含以下欄位： 預約會員人數
 SELECT COUNT(DISTINCT "COURSE_BOOKING".user_id) AS "預約會員人數"
 FROM "COURSE_BOOKING"
-WHERE "COURSE_BOOKING".created_at BETWEEN '2024-12-01 00:00:00' AND '2024-12-30 23:59:59'
+WHERE "COURSE_BOOKING".created_at BETWEEN '2024-11-01 00:00:00' AND '2024-11-30 23:59:59'
 AND "COURSE_BOOKING".status = '即將授課';
 
